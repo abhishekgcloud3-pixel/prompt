@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import ModelSelector from '@/components/ModelSelector';
 import LogoutButton from '@/components/LogoutButton';
+import PromptEnhancer from '@/components/PromptEnhancer';
 import { OpenRouterModel } from '@/lib/types';
 
 export default function MainApp() {
@@ -14,21 +15,21 @@ export default function MainApp() {
   };
 
   return (
-    <div className="card">
+    <div className="card cardWide">
       <h1 className="title">Prompt Enhancement App</h1>
-      <p className="subtitle">
-        Select a free model to get started.
-      </p>
+      <p className="subtitle">Select a free model, then enhance your prompt.</p>
 
       <ModelSelector onSelect={handleModelSelect} />
 
-      {selectedModel && (
-        <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Selected Model:</div>
+      {selectedModel ? (
+        <div className="selectedModel">
+          <div className="selectedModelTitle">Selected Model</div>
           <div>{selectedModel.name}</div>
-          <div style={{ fontSize: '0.8em', opacity: 0.7 }}>{selectedModel.id}</div>
+          <div className="selectedModelId">{selectedModel.id}</div>
         </div>
-      )}
+      ) : null}
+
+      {selectedModel ? <PromptEnhancer selectedModel={selectedModel} /> : null}
 
       <div className="actions" style={{ marginTop: '24px' }}>
         <Link className="button" href="/">
