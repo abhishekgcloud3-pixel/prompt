@@ -27,34 +27,23 @@ function toCdata(value: string): string {
   return value.replaceAll(']]>', ']]]]><![CDATA[>');
 }
 
-function fallbackJson(originalPrompt: string, enhancedPrompt: string): string {
+function fallbackJson(enhancedPrompt: string): string {
   return JSON.stringify(
     {
-      original_prompt: originalPrompt,
-      enhanced_prompt: enhancedPrompt,
-      structure: [],
-      key_improvements: []
+      enhanced_prompt: enhancedPrompt
     },
     null,
     2
   );
 }
 
-function fallbackXml(originalPrompt: string, enhancedPrompt: string): string {
-  return [
-    '<prompt_enhancement>',
-    `  <original_prompt><![CDATA[${toCdata(originalPrompt)}]]></original_prompt>`,
-    `  <enhanced_prompt><![CDATA[${toCdata(enhancedPrompt)}]]></enhanced_prompt>`,
-    '  <structure></structure>',
-    '  <key_improvements></key_improvements>',
-    '</prompt_enhancement>'
-  ].join('\n');
+function fallbackXml(enhancedPrompt: string): string {
+  return `<enhanced_prompt><![CDATA[${toCdata(enhancedPrompt)}]]></enhanced_prompt>`;
 }
 
 function normalizeModelOutput(
   format: OutputFormat,
-  raw: string,
-  originalPrompt: string
+  raw: string
 ): string {
   const trimmed = raw.trim();
 
@@ -62,63 +51,86 @@ function normalizeModelOutput(
     try {
       const parsed = JSON.parse(trimmed) as Record<string, unknown>;
       const enhancedPrompt = parsed.enhanced_prompt;
-      const structure = parsed.structure;
-      const keyImprovements = parsed.key_improvements;
 
-      if (
-        typeof enhancedPrompt !== 'string' ||
-        !Array.isArray(structure) ||
-        !Array.isArray(keyImprovements)
-      ) {
-        return fallbackJson(originalPrompt, trimmed);
+      if (typeof enhancedPrompt !== 'string') {
+        return fallbackJson(trimmed);
       }
 
       const normalized = {
-        original_prompt: originalPrompt,
-        enhanced_prompt: enhancedPrompt,
-        structure: structure.filter((item): item is string => typeof item === 'string'),
-        key_improvements: keyImprovements.filter(
-          (item): item is string => typeof item === 'string'
-        )
+        enhanced_prompt: enhancedPrompt
       };
 
       return JSON.stringify(normalized, null, 2);
     } catch {
-      return fallbackJson(originalPrompt, trimmed);
+      return fallbackJson(trimmed);
     }
   }
 
   const looksLikeXml =
     trimmed.startsWith('<') &&
-    trimmed.includes('<prompt_enhancement') &&
-    trimmed.includes('<original_prompt') &&
-    trimmed.includes('<enhanced_prompt') &&
-    trimmed.includes('<structure') &&
-    trimmed.includes('<key_improvements');
+    trimmed.includes('<enhanced_prompt');
 
   if (looksLikeXml) {
     return trimmed;
   }
 
-  return fallbackXml(originalPrompt, trimmed);
+  return fallbackXml(trimmed);
 }
 
 function buildSystemPrompt(format: OutputFormat): string {
   const responseSchema =
     format === 'json'
-      ? `Return ONLY a single valid JSON object (no markdown, no code fences) with exactly these keys:\n\n{\n  "original_prompt": string,\n  "enhanced_prompt": string,\n  "structure": string[],\n  "key_improvements": string[]\n}\n\nRules:\n- "original_prompt" must match the user's input exactly.\n- "enhanced_prompt" must be a ready-to-use prompt with clear sections.\n- "structure" is an ordered list of the section titles you used.\n- "key_improvements" is a concise list of the most important upgrades you made.`
-      : `Return ONLY a single XML document (no markdown, no code fences) with this structure:\n\n<prompt_enhancement>\n  <original_prompt><![CDATA[...]]></original_prompt>\n  <enhanced_prompt><![CDATA[...]]></enhanced_prompt>\n  <structure>\n    <item>...</item>\n  </structure>\n  <key_improvements>\n    <item>...</item>\n  </key_improvements>\n</prompt_enhancement>\n\nRules:\n- original_prompt must match the user's input exactly.\n- Put original_prompt and enhanced_prompt inside CDATA.\n- Use <item> for each structure/improvement entry.`;
+      ? `Return ONLY a single valid JSON object (no markdown, no code fences) with exactly this structure:\n\n{\n  "enhanced_prompt": string\n}\n\nRule:\n- "enhanced_prompt" must be a comprehensive, ready-to-use video generation prompt with clear video-specific sections.`
+      : `Return ONLY a single XML document (no markdown, no code fences) with this structure:\n\n<enhanced_prompt>\n  <!-- comprehensive video generation prompt here -->\n</enhanced_prompt>\n\nRule:\n- Put the enhanced prompt inside CDATA.`;
 
   return [
-    'You are an expert prompt engineer with 30+ years of experience.',
-    'Your task is to enhance user prompts to be more effective, precise, and immediately usable.',
+    'You are an expert video generation prompt engineer with 30+ years of experience in filmmaking and visual storytelling.',
+    'Your task is to enhance user prompts into comprehensive, professional video generation prompts ready for use with platforms like RunwayML, Midjourney, Pika Labs, or similar video generation tools.',
     '',
-    'Enhancement goals:',
-    '- Add missing context, assumptions to confirm, and clarifying questions (only if critical).',
-    '- Make objectives explicit and unambiguous.',
-    '- Add constraints, edge cases, and quality criteria.',
-    '- Specify expected output format, tone, and level of detail.',
-    '- Structure the enhanced prompt into clear sections (e.g., Objective, Context, Inputs, Requirements, Constraints, Output Format, Acceptance Criteria).',
+    'Video Enhancement Guidelines:',
+    '',
+    '[Scene Setup]',
+    '- Describe the setting, environment, and visual atmosphere in detail',
+    '- Include cinematography specifics (wide shot, close-up, medium shot, etc.)',
+    '- Specify visual style (realistic, animated, cinematic, documentary style, etc.)',
+    '',
+    '[Camera Work]',
+    '- Detail camera movements (pan left/right, tilt up/down, zoom in/out, tracking shots, dolly moves)',
+    '- Specify camera angles (eye level, low angle, high angle, bird\'s eye, worm\'s eye)',
+    '- Include camera techniques (handheld, steady, gimbal, drone shots)',
+    '',
+    '[Lighting & Color]',
+    '- Specify lighting conditions (golden hour, blue hour, natural light, studio lighting, neon, dramatic shadows)',
+    '- Include color grading hints (warm tones, cool tones, high contrast, desaturated, vibrant)',
+    '- Detail mood and atmosphere through lighting',
+    '',
+    '[Duration & Pacing]',
+    '- Suggest optimal timing for scenes (slow motion, real time, time-lapse)',
+    '- Include pacing instructions (quick cuts, long takes, gradual build-up)',
+    '- Specify transitions between scenes if applicable',
+    '',
+    '[Characters & Movement]',
+    '- Describe character actions, expressions, and interactions',
+    '- Include specific gestures, facial expressions, and body language',
+    '- Detail any special effects or character animations',
+    '',
+    '[Audio & Sound Design]',
+    '- Suggest background music style or genre',
+    '- Include ambient sounds, dialogue requirements, or sound effects',
+    '- Specify audio mood and intensity',
+    '',
+    '[Visual Effects & Styling]',
+    '- Include particle effects, environmental effects, or special visual elements',
+    '- Specify visual filters, effects, or post-processing hints',
+    '- Detail any unique visual aesthetics or artistic styles',
+    '',
+    '[Output Quality & Technical]',
+    '- Suggest resolution and aspect ratio preferences',
+    '- Include quality expectations (cinematic quality, broadcast quality, etc.)',
+    '- Specify render style preferences when relevant',
+    '',
+    'Example Structure:',
+    '[Scene Setup] → [Camera Work] → [Lighting] → [Duration] → [Audio] → [Effects] → [Output Quality]',
     '',
     responseSchema
   ].join('\n');
@@ -164,7 +176,7 @@ export async function POST(request: Request) {
       ]
     });
 
-    const output = normalizeModelOutput(format, completion, prompt);
+    const output = normalizeModelOutput(format, completion);
 
     return NextResponse.json({ format, output });
   } catch (error) {
