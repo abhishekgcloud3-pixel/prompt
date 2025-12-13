@@ -12,10 +12,10 @@ export default function HomePage() {
   return (
     <main className="page">
       <div className="card">
-        <h1 className="title">Welcome</h1>
+        <h1 className="title">Video Prompt Enhancement Engine</h1>
         <p className="subtitle">
           This is a password-protected landing page. Enter the password to access
-          the prompt enhancement app.
+          the video prompt enhancement tool specialized for professional video generation.
         </p>
 
         <PasswordForm />

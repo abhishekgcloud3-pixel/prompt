@@ -16,8 +16,8 @@ export default function MainApp() {
 
   return (
     <div className="card cardWide">
-      <h1 className="title">Prompt Enhancement App</h1>
-      <p className="subtitle">Select a free model, then enhance your prompt.</p>
+      <h1 className="title">Video Prompt Enhancement Engine</h1>
+      <p className="subtitle">Select a model, then enhance your video generation prompts with professional cinematography, camera work, and visual storytelling.</p>
 
       <ModelSelector onSelect={handleModelSelect} />
 

@@ -74,7 +74,7 @@ export default function PromptEnhancer({ selectedModel }: PromptEnhancerProps) {
     <div className="enhancer">
       <div className="form">
         <label className="label" htmlFor="prompt-input">
-          Your prompt
+          Video Generation Prompt
         </label>
         <textarea
           id="prompt-input"
@@ -82,7 +82,7 @@ export default function PromptEnhancer({ selectedModel }: PromptEnhancerProps) {
           rows={8}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Describe what you want the model to do..."
+          placeholder="Enter your video scene idea, story beat, or visual concept... (e.g., 'A cat playing in a garden', 'Time-lapse of city traffic at night', 'Close-up of coffee being poured into a mug')"
         />
 
         {error ? (
@@ -98,24 +98,25 @@ export default function PromptEnhancer({ selectedModel }: PromptEnhancerProps) {
             onClick={enhance}
             disabled={!canEnhance}
           >
-            {loading ? 'Enhancing…' : 'Enhance Prompt'}
+            {loading ? 'Enhancing Video Prompt…' : 'Enhance Video Prompt'}
           </button>
-
-          {output ? (
-            <button className="button secondary" type="button" onClick={copyToClipboard}>
-              Copy Output
-            </button>
-          ) : null}
         </div>
       </div>
 
       {output ? (
-        <div className="outputPanel" aria-label="Enhanced prompt output">
+        <div className="outputPanel" aria-label="Enhanced video prompt output">
           <div className="outputHeader">
             <div>
-              <div className="outputTitle">Enhanced Output</div>
-              <div className="outputMeta">Format: {format?.toUpperCase()}</div>
+              <div className="outputTitle">Enhanced Video Prompt</div>
+              <div className="outputMeta">Ready to copy and use with video generation tools</div>
             </div>
+            <button 
+              className="button secondary copyButton" 
+              type="button" 
+              onClick={copyToClipboard}
+            >
+              Copy to Clipboard
+            </button>
           </div>
           <pre className="outputCode">{output}</pre>
         </div>
